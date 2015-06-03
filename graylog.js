@@ -4,9 +4,11 @@ var zlib = require('zlib'),
     util = require('util'),
     EventEmitter = require('events').EventEmitter;
 
+
 /**
- * Graylog instances emit errors. That means you really really should listen for them,
- * or accept uncaught exceptions (node throws if you don't listen for "error").
+ * Graylog instances emit errors. That means you really really should listen for
+ * them, or accept uncaught exceptions (node throws if you don't listen for
+ * "error").
  */
 
 var graylog = function graylog(config) {
@@ -22,7 +24,7 @@ var graylog = function graylog(config) {
 
     this._bufferSize = config.bufferSize || this.DEFAULT_BUFFERSIZE;
 
-    this.client = dgram.createSocket("udp4");
+    this.client = dgram.createSocket('udp4');
 
     // unref so we don't need to close it explicitly. since we aren't listening
     // for messages, there's no need to keep it open
@@ -32,12 +34,12 @@ var graylog = function graylog(config) {
     this.client.on('error', function (err) {
         that.emit('error', err);
     });
-
 };
 
 util.inherits(graylog, EventEmitter);
 
-graylog.prototype.DEFAULT_BUFFERSIZE = 1400;  // a bit less than a typical MTU of 1500 to be on the safe side
+// a bit less than a typical MTU of 1500 to be on the safe side
+graylog.prototype.DEFAULT_BUFFERSIZE = 1400;
 
 graylog.prototype.level = {
     EMERG: 0, // system is unusable
