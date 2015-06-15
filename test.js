@@ -1,16 +1,16 @@
 var graylog = require('./graylog'),
-    fs = require('fs'),
-    file,
-    data,
-    servers = [
-        { 'host': '127.0.0.1', 'port': 12201 }
-    ];
+  fs = require('fs'),
+  file,
+  data,
+  servers = [
+    { 'host': '127.0.0.1', 'port': 12201 }
+  ];
 
 
 var client = new graylog.graylog({
-        servers: servers,
-        facility: 'Test logger / Node.JS Test Script'
-    });
+    servers: servers,
+    facility: 'Test logger / Node.JS Test Script'
+  });
 
 console.log('---------------------------------------------');
 console.log('Sending three test as info, warning and error');
@@ -33,10 +33,10 @@ console.log('---------------------------------------------');
 console.log('Sending data of different sizes (as critical)');
 console.log('---------------------------------------------');
 for (var i = 4; i <= 128; i *= 2) {
-    file = './data/' + i + '.dat';
-    data = fs.readFileSync(file);
-    console.log('sending', file);
-    client.critical('Test 4 ' + file, data.toString(), {datafile: i + '.dat'});
+  file = './data/' + i + '.dat';
+  data = fs.readFileSync(file);
+  console.log('sending', file);
+  client.critical('Test 4 ' + file, data.toString(), {datafile: i + '.dat'});
 }
 console.log('');
 

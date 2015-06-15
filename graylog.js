@@ -1,8 +1,8 @@
 var zlib = require('zlib'),
-    crypto = require('crypto'),
-    dgram = require('dgram'),
-    util = require('util'),
-    EventEmitter = require('events').EventEmitter;
+  crypto = require('crypto'),
+  dgram = require('dgram'),
+  util = require('util'),
+  EventEmitter = require('events').EventEmitter;
 
 
 /**
@@ -12,28 +12,28 @@ var zlib = require('zlib'),
  */
 
 var graylog = function graylog(config) {
-    EventEmitter.call(this);
+  EventEmitter.call(this);
 
-    this.config = config;
+  this.config = config;
 
-    this.servers = config.servers;
-    this.hostname = config.hostname || require('os').hostname();
-    this.facility = config.facility || 'Node.js';
+  this.servers = config.servers;
+  this.hostname = config.hostname || require('os').hostname();
+  this.facility = config.facility || 'Node.js';
 
-    this._callCount = 0;
+  this._callCount = 0;
 
-    this._bufferSize = config.bufferSize || this.DEFAULT_BUFFERSIZE;
+  this._bufferSize = config.bufferSize || this.DEFAULT_BUFFERSIZE;
 
-    this.client = dgram.createSocket('udp4');
+  this.client = dgram.createSocket('udp4');
 
-    // unref so we don't need to close it explicitly. since we aren't listening
-    // for messages, there's no need to keep it open
-    this.client.unref();
+  // unref so we don't need to close it explicitly. since we aren't listening
+  // for messages, there's no need to keep it open
+  this.client.unref();
 
-    var that = this;
-    this.client.on('error', function (err) {
-        that.emit('error', err);
-    });
+  var that = this;
+  this.client.on('error', function (err) {
+    that.emit('error', err);
+  });
 };
 
 util.inherits(graylog, EventEmitter);
@@ -42,195 +42,195 @@ util.inherits(graylog, EventEmitter);
 graylog.prototype.DEFAULT_BUFFERSIZE = 1400;
 
 graylog.prototype.level = {
-    EMERG: 0, // system is unusable
-    ALERT: 1, // action must be taken immediately
-    CRIT: 2, // critical conditions
-    ERR: 3, // error conditions
-    ERROR: 3, // because people WILL typo
-    WARNING: 4, // warning conditions
-    NOTICE: 5, // normal, but significant, condition
-    INFO: 6, // informational message
-    DEBUG: 7 // debug level message
+  EMERG: 0, // system is unusable
+  ALERT: 1, // action must be taken immediately
+  CRIT: 2, // critical conditions
+  ERR: 3, // error conditions
+  ERROR: 3, // because people WILL typo
+  WARNING: 4, // warning conditions
+  NOTICE: 5, // normal, but significant, condition
+  INFO: 6, // informational message
+  DEBUG: 7 // debug level message
 };
 
 graylog.prototype.getServer = function () {
-    return this.servers[this._callCount++ % this.servers.length];
+  return this.servers[this._callCount++ % this.servers.length];
 };
 
 graylog.prototype.emergency = function (short_message, full_message, additionalFields, timestamp) {
-    return this._log(short_message, full_message, additionalFields, timestamp, this.level.EMERG);
+  return this._log(short_message, full_message, additionalFields, timestamp, this.level.EMERG);
 };
 
 graylog.prototype.alert = function (short_message, full_message, additionalFields, timestamp) {
-    return this._log(short_message, full_message, additionalFields, timestamp, this.level.ALERT);
+  return this._log(short_message, full_message, additionalFields, timestamp, this.level.ALERT);
 };
 
 graylog.prototype.critical = function (short_message, full_message, additionalFields, timestamp) {
-    return this._log(short_message, full_message, additionalFields, timestamp, this.level.CRIT);
+  return this._log(short_message, full_message, additionalFields, timestamp, this.level.CRIT);
 };
 
 graylog.prototype.error = function (short_message, full_message, additionalFields, timestamp) {
-    return this._log(short_message, full_message, additionalFields, timestamp, this.level.ERROR);
+  return this._log(short_message, full_message, additionalFields, timestamp, this.level.ERROR);
 };
 
 graylog.prototype.warning = function (short_message, full_message, additionalFields, timestamp) {
-    return this._log(short_message, full_message, additionalFields, timestamp, this.level.WARNING);
+  return this._log(short_message, full_message, additionalFields, timestamp, this.level.WARNING);
 };
 graylog.prototype.warn = graylog.prototype.warning;
 
 graylog.prototype.notice = function (short_message, full_message, additionalFields, timestamp) {
-    return this._log(short_message, full_message, additionalFields, timestamp, this.level.NOTICE);
+  return this._log(short_message, full_message, additionalFields, timestamp, this.level.NOTICE);
 };
 
 graylog.prototype.info = function (short_message, full_message, additionalFields, timestamp) {
-    return this._log(short_message, full_message, additionalFields, timestamp, this.level.INFO);
+  return this._log(short_message, full_message, additionalFields, timestamp, this.level.INFO);
 };
 graylog.prototype.log = graylog.prototype.info;
 
 graylog.prototype.debug = function (short_message, full_message, additionalFields, timestamp) {
-    return this._log(short_message, full_message, additionalFields, timestamp, this.level.DEBUG);
+  return this._log(short_message, full_message, additionalFields, timestamp, this.level.DEBUG);
 };
 
 graylog.prototype._log = function log(short_message, full_message, additionalFields, timestamp, level) {
-    var payload,
-        fileinfo,
-        that = this,
-        field = '',
-        message = {
-            version : '1.0',
-            timestamp : (timestamp || new Date()).getTime() / 1000,
-            host : this.hostname,
-            facility : this.facility,
-            level : level
-        };
+  var payload,
+    fileinfo,
+    that = this,
+    field = '',
+    message = {
+      version : '1.0',
+      timestamp : (timestamp || new Date()).getTime() / 1000,
+      host : this.hostname,
+      facility : this.facility,
+      level : level
+    };
 
-    if (typeof(short_message) !== 'object' && typeof(full_message) === 'object' && additionalFields === undefined) {
-        // Only short message and additional fields are available
-        message.short_message = short_message;
-        message.full_message = short_message;
+  if (typeof(short_message) !== 'object' && typeof(full_message) === 'object' && additionalFields === undefined) {
+    // Only short message and additional fields are available
+    message.short_message = short_message;
+    message.full_message = short_message;
 
-        additionalFields = full_message;
-    } else if (typeof(short_message) !== 'object') {
-        // We normally set the data
-        message.short_message = short_message;
-        message.full_message = full_message || short_message;
-    } else if (short_message.stack && short_message.message) {
+    additionalFields = full_message;
+  } else if (typeof(short_message) !== 'object') {
+    // We normally set the data
+    message.short_message = short_message;
+    message.full_message = full_message || short_message;
+  } else if (short_message.stack && short_message.message) {
 
-        // Short message is an Error message, we process accordingly
-        message.short_message = short_message.message;
-        message.full_message = short_message.stack;
+    // Short message is an Error message, we process accordingly
+    message.short_message = short_message.message;
+    message.full_message = short_message.stack;
 
-        // extract error file and line
-        fileinfo = message.stack.split('\n')[0];
-        fileinfo = fileinfo.substr(fileinfo.indexOf('('), fileinfo.indeOf(')'));
-        fileinfo = fileinfo.split(':');
+    // extract error file and line
+    fileinfo = message.stack.split('\n')[0];
+    fileinfo = fileinfo.substr(fileinfo.indexOf('('), fileinfo.indeOf(')'));
+    fileinfo = fileinfo.split(':');
 
-        message.file = fileinfo[0];
-        message.line = fileinfo[1];
+    message.file = fileinfo[0];
+    message.line = fileinfo[1];
 
-        additionalFields = full_message || additionalFields;
-    } else {
-        message.full_message = message.short_message = JSON.stringify(short_message);
+    additionalFields = full_message || additionalFields;
+  } else {
+    message.full_message = message.short_message = JSON.stringify(short_message);
+  }
+
+  // We insert additional fields
+  for (field in additionalFields) {
+    message['_' + field] = additionalFields[field];
+  }
+
+  // https://github.com/Graylog2/graylog2-docs/wiki/GELF
+  if (message._id) {
+    message.__id = message._id;
+    delete message._id;
+  }
+
+  // Compression
+  payload = new Buffer(JSON.stringify(message));
+
+  zlib.deflate(payload, function (err, buffer) {
+    if (err) {
+      return that.emitError(err);
     }
 
-    // We insert additional fields
-    for (field in additionalFields) {
-        message['_' + field] = additionalFields[field];
+    // If it all fits, just send it
+    if (buffer.length <= that._bufferSize) {
+      return that.send(buffer, that.getServer());
     }
 
-    // https://github.com/Graylog2/graylog2-docs/wiki/GELF
-    if (message._id) {
-        message.__id = message._id;
-        delete message._id;
+    // It didn't fit, so prepare for a chunked stream
+
+    var bufferSize = that._bufferSize;
+    var dataSize = bufferSize - 12;  // the data part of the buffer is the buffer size - header size
+    var chunkCount = Math.ceil(buffer.length / dataSize);
+
+    if (chunkCount > 128) {
+      return that.emitError('Cannot log messages bigger than ' + (dataSize * 128) +  ' bytes');
     }
 
-    // Compression
-    payload = new Buffer(JSON.stringify(message));
+    // Generate a random id in buffer format
+    crypto.randomBytes(8, function (err, id) {
+      if (err) {
+        return that.emitError(err);
+      }
 
-    zlib.deflate(payload, function (err, buffer) {
-        if (err) {
-            return that.emitError(err);
+      // To be tested: what's faster, sending as we go or prebuffering?
+      var server = that.getServer();
+      var chunk = new Buffer(bufferSize);
+      var chunkSequenceNumber = 0;
+
+      // Prepare the header
+
+      // Set up magic number (bytes 0 and 1)
+      chunk[0] = 30;
+      chunk[1] = 15;
+
+      // Set the total number of chunks (byte 11)
+      chunk[11] = chunkCount;
+
+      // Set message id (bytes 2-9)
+      id.copy(chunk, 2, 0, 8);
+
+      function send(err) {
+        if (err || chunkSequenceNumber >= chunkCount) {
+          // We have reached the end, or had an error (which will
+          // already have been emitted)
+          return;
         }
 
-        // If it all fits, just send it
-        if (buffer.length <= that._bufferSize) {
-            return that.send(buffer, that.getServer());
-        }
+        // Set chunk sequence number (byte 10)
+        chunk[10] = chunkSequenceNumber;
 
-        // It didn't fit, so prepare for a chunked stream
+        // Copy data from full buffer into the chunk
+        var start = chunkSequenceNumber * dataSize;
+        var stop = Math.min((chunkSequenceNumber + 1) * dataSize, buffer.length);
 
-        var bufferSize = that._bufferSize;
-        var dataSize = bufferSize - 12;  // the data part of the buffer is the buffer size - header size
-        var chunkCount = Math.ceil(buffer.length / dataSize);
+        buffer.copy(chunk, 12, start, stop);
 
-        if (chunkCount > 128) {
-            return that.emitError('Cannot log messages bigger than ' + (dataSize * 128) +  ' bytes');
-        }
+        chunkSequenceNumber++;
 
-        // Generate a random id in buffer format
-        crypto.randomBytes(8, function (err, id) {
-            if (err) {
-                return that.emitError(err);
-            }
+        // Send the chunk
+        that.send(chunk.slice(0, stop - start + 12), server, send);
+      }
 
-            // To be tested: what's faster, sending as we go or prebuffering?
-            var server = that.getServer();
-            var chunk = new Buffer(bufferSize);
-            var chunkSequenceNumber = 0;
-
-            // Prepare the header
-
-            // Set up magic number (bytes 0 and 1)
-            chunk[0] = 30;
-            chunk[1] = 15;
-
-            // Set the total number of chunks (byte 11)
-            chunk[11] = chunkCount;
-
-            // Set message id (bytes 2-9)
-            id.copy(chunk, 2, 0, 8);
-
-            function send(err) {
-                if (err || chunkSequenceNumber >= chunkCount) {
-                    // We have reached the end, or had an error (which will
-                    // already have been emitted)
-                    return;
-                }
-
-                // Set chunk sequence number (byte 10)
-                chunk[10] = chunkSequenceNumber;
-
-                // Copy data from full buffer into the chunk
-                var start = chunkSequenceNumber * dataSize;
-                var stop = Math.min((chunkSequenceNumber + 1) * dataSize, buffer.length);
-
-                buffer.copy(chunk, 12, start, stop);
-
-                chunkSequenceNumber++;
-
-                // Send the chunk
-                that.send(chunk.slice(0, stop - start + 12), server, send);
-            }
-
-            send();
-        });
+      send();
     });
+  });
 };
 
 graylog.prototype.send = function (chunk, server, cb) {
-    var that = this;
-    this.client.send(chunk, 0, chunk.length, server.port, server.host, function (err) {
-        if (err) {
-            that.emit('error', err);
-        }
-        if (cb) {
-            cb(err);
-        }
-    });
+  var that = this;
+  this.client.send(chunk, 0, chunk.length, server.port, server.host, function (err) {
+    if (err) {
+      that.emit('error', err);
+    }
+    if (cb) {
+      cb(err);
+    }
+  });
 };
 
 graylog.prototype.emitError = function (err) {
-    this.emit('error', err);
+  this.emit('error', err);
 };
 
 exports.graylog = graylog;
